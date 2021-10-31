@@ -17,10 +17,11 @@ double makeRandomDouble()
 int main()
 {
 	std::vector<std::shared_ptr<CCurve>> aCurve;
-	aCurve.reserve(10);
+	const size_t nCurve = 25;
+	aCurve.reserve(nCurve);
 	//Random filling curveContainer with different curves with various parameters.
 	srand(time(NULL));
-	for(int i = 0; i < 10; i++)
+	for(int i = 0; i < nCurve; i++)
 	{
 		switch (rand() % 3) 
 		{
@@ -62,12 +63,12 @@ int main()
 
 	//Computing total sum of radii of circles from aCircle.
 	double sum = 0;
-	const size_t nCirc = aCircle.size();
+	const int nCirc = aCircle.size();
 	if(nCirc > 1)
 	{
 		std::vector<double> vec(nCirc / 2);
-#pragma omp for shared(aCircle, vec, nCirc)
-		for(size_t i = 0; i < nCirc / 2; ++i)
+#pragma omp parallel for shared(aCircle, vec, nCirc)
+		for(int i = 0; i < nCirc / 2; ++i)
 			vec[i] = aCircle[i]->getRadius() + aCircle[nCirc - i - 1]->getRadius();
 
 		if(nCirc % 2 == 1)
@@ -75,9 +76,9 @@ int main()
 
 		while(vec.size() > 1)
 		{
-			const size_t nVec = vec.size();
-#pragma omp for shared(vec, nVec)
-			for (size_t i = 0; i < nVec / 2; ++i)
+			const int nVec = vec.size();
+#pragma omp parallel for shared(vec, nVec)
+			for (int i = 0; i < nVec / 2; ++i)
 				vec[i] = vec[i] + vec[nVec - i - 1];
 
 			vec.resize(nVec / 2);
@@ -90,6 +91,5 @@ int main()
 	}
 
 	std::cout << "\nThe sum of all the radii of the second container: " << sum << "\n";
-	system("pause");
 	return 0;
 }
